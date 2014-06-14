@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<style>
+td {  /* для каждой клетки шахматной доски */
+	width:40px;  /* ширина */
+	height:40px; /* длина */
+}
+td:hover {
+	box-shadow: inset 0 0 10px 2px rgba(216,85,0,0.9);
+}
+tr:nth-child(odd) td:nth-child(odd), tr:nth-child(even) td:nth-child(even) { /* в нечетных строках нечетные ячейки и в четных строках четные ячейки - белые */
+	background-color: #F0D9B5; /* цвет клетки */
+}
+tr td { /* все остальные - темные */
+	background-color: #B58863; /* цвет клетки */
+}
+a {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+[selected] {
+	background-color: limegreen !important;
+}
+.white_peshka {
+	background-image: url('white/peshka.svg');
+}
+.black_peshka {
+	background-image: url('black/peshka.svg');	
+}
+</style>
+</head>
+
+<body>
+<table id="table"> <!-- таблица, которая будет выглядеть как шахматная доска -->
+	<tr>
+		<td id="a8"></td>
+		<td id="b8"></td>
+		<td id="c8"></td>
+		<td id="d8"></td>
+		<td id="e8"></td>
+		<td id="f8"></td>
+		<td id="g8"></td>
+		<td id="h8"></td>
+	</tr>
+	<tr>
+		<td id="a7"><a class="black_peshka"></a></td>
+		<td id="b7"><a class="black_peshka"></a></td>
+		<td id="c7"><a class="black_peshka"></a></td>
+		<td id="d7"><a class="black_peshka"></a></td>
+		<td id="e7"><a class="black_peshka"></a></td>
+		<td id="f7"><a class="black_peshka"></a></td>
+		<td id="g7"><a class="black_peshka"></a></td>
+		<td id="h7"><a class="black_peshka"></a></td>
+	</tr>
+	<tr>
+		<td id="a6"></td>
+		<td id="b6"></td>
+		<td id="c6"></td>
+		<td id="d6"></td>
+		<td id="e6"></td>
+		<td id="f6"></td>
+		<td id="g6"></td>
+		<td id="h6"></td>
+	</tr>
+	<tr>
+		<td id="a5"></td>
+		<td id="b5"></td>
+		<td id="c5"></td>
+		<td id="d5"></td>
+		<td id="e5"></td>
+		<td id="f5"></td>
+		<td id="g5"></td>
+		<td id="h5"></td>
+	</tr>
+	<tr>
+		<td id="a4"></td>
+		<td id="b4"></td>
+		<td id="c4"></td>
+		<td id="d4"></td>
+		<td id="e4"></td>
+		<td id="f4"></td>
+		<td id="g4"></td>
+		<td id="h4"></td>
+	</tr>
+	<tr>
+		<td id="a3"></td>
+		<td id="b3"></td>
+		<td id="c3"></td>
+		<td id="d3"></td>
+		<td id="e3"></td>
+		<td id="f3"></td>
+		<td id="g3"></td>
+		<td id="h3"></td>
+	</tr>
+	<tr>
+		<td id="a2"><a class="white_peshka"></a></td>
+		<td id="b2"><a class="white_peshka"></a></td>
+		<td id="c2"><a class="white_peshka"></a></td>
+		<td id="d2"><a class="white_peshka"></a></td>
+		<td id="e2"><a class="white_peshka"></a></td>
+		<td id="f2"><a class="white_peshka"></a></td>
+		<td id="g2"><a class="white_peshka"></a></td>
+		<td id="h2"><a class="white_peshka"></a></td>
+	</tr>
+	<tr>
+		<td id="a1"></td>
+		<td id="b1"></td>
+		<td id="c1"></td>
+		<td id="d1"></td>
+		<td id="e1"></td>
+		<td id="f1"></td>
+		<td id="g1"></td>
+		<td id="h1"></td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+selected = false;									  // выбран ли какой то элемент
+selectedElement = null;								  // элемент, если он выбран
+
+
+cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']; 	  // все столбцы
+
+
+function clearSelection() 							  // функция для сброса выделенных ячеек
+{
+	var elements = $('[selected]'); 				  // все выделенные ячейки
+	for (var i = 0; i < elements.length; i++) 
+	{
+		elements[i].removeAttribute('selected'); 	  // у каждой убираем атрибут selected
+		if (elements[i].tagName == 'TD')			  // если ячейка
+		{
+			elements[i].onclick = null;				  // удаляем обработчик при нажатии
+		}
+	}
+	selected = false;       						  // указываем что никакой элемент не выделен
+	selectedElement = null; 						  // сбрасываем значение
+}
+
+
+function clickElement(e) 							  // функция для выбора фигуры
+{
+	var element = e.target;  						  // элемент по которому нажали мышкой
+	if (element.hasAttribute('selected')) 			  // если у него есть атрибут selected
+	{
+		clearSelection(); 							  // сбрасываем все выделенные ячейки
+	}
+	else if (!selected && element.color == moveColor) // если ничего не выделено и цвет нажимаемой фигуры это цвет стороны которая ходит
+	{
+		element.setAttribute('selected', ''); 		  // назначаем элементу атрибут selected (для подсветки зеленым)
+		selected = true; 							  // указываем что есть выделение
+		selectedElement = element;					  // указываем элемент который выделен
+		showAvailableMoves(element);				  // подсвечиваем возможные ходы
+	}
+}
+
+
+function showAvailableMoves(element) 				  // функция для отображения возможных ходов выделенной фигуры
+{
+	var figura = element.figura;					  // что за фигура
+	var cell = element.parentNode;					  // ячейка в которой находится данная фигура
+	var row = parseInt(cell.id.substr(1, 1));     	  // в каком ряду (от 1 до 8) - берем из id ячейки (второй символ) и приводим к типу число
+	var col = cols.indexOf(cell.id.substr(0, 1));     // в каком столбце - берем из id ячейки (первый символ) и ищем этот столбец в массиве cols
+	var moves = [];									  // массив для хранения доступных ячеек для перемещения
+	var id = '';									  // переменная для временного хранения id ячейки доступной для перемещения
+	var color = element.color;						  // сохраняем цвет фигуры
+
+	if (figura == 'peshka')						      // если это пешка
+	{
+		if (color == 'white')						  // пешка белого цвета
+		{
+			if (row < 8)							  // если пешка не на последнем ряду
+			{
+				if (!hasFigura(row + 1, col))		  // если впереди нет фигуры
+				{
+					id = makeId(row + 1, col);		  // берем следующую по вертикали ячейку	
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				
+				if (row == 2)						  // если пешка на втором ряду
+				{
+					id = makeId(row + 2, col);		  // берем ячейку через одну по вертикали
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				
+				if (hasFigura(row + 1, col - 1, 'black')) // если есть черная фигура по диагонали вверх влево
+				{
+					id = makeId(row + 1, col - 1);	  // берем ячейку по диагонали вверх влево
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				if (hasFigura(row + 1, col + 1, 'black')) // если есть черная фигура по диагонали вверх вправо
+				{
+					id = makeId(row + 1, col + 1);	  // берем ячейку по диагонали вверх вправо
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+													  // обработка "взятия на проходе"
+				if (row == 5 && lastFastMove)		  // если на 5 ряду и был быстрый проход
+				{
+					var col2 = cols.indexOf(lastFastMove); // столбец где был предыдущий быстрый проход
+					if (Math.abs(col2 - col) == 1)	  // если быстрый проход был на соседнем столбце - модуль разности столбцов равен единице
+					{
+						id = makeId(row + 1, col2);	  // берем ячейку вверх и того столбца где был быстрый проход
+						moves.push(id);				  // добавляем ячейку в разрешенные
+					}
+				}
+			}
+		}
+		else										  // пешка черного цвета
+		{
+			if (row > 1)							  // если пешка не на последнем ряду
+			{
+				if (!hasFigura(row - 1, col))		  // если впереди нет фигуры
+				{
+					id = makeId(row - 1, col);		  // берем следующую по вертикали ячейку	
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				
+				if (row == 7)						  // если пешка на втором ряду
+				{
+					id = makeId(row - 2, col);		  // берем ячейку через одну по вертикали
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				
+				if (hasFigura(row - 1, col - 1, 'white')) // если есть белая фигура по диагонали вниз влево
+				{
+					id = makeId(row - 1, col - 1);	  // берем ячейку по диагонали вниз влево
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+				if (hasFigura(row - 1, col + 1, 'white')) // если есть белая фигура по диагонали вниз вправо
+				{
+					id = makeId(row - 1, col + 1);	  // берем ячейку по диагонали вниз вправо
+					moves.push(id);					  // добавляем ячейку в разрешенные
+				}
+													  // обработка "взятия на проходе"
+				if (row == 4 && lastFastMove)		  // если на 4 ряду и был быстрый проход
+				{
+					var col2 = cols.indexOf(lastFastMove); // столбец где был предыдущий быстрый проход
+					if (Math.abs(col2 - col) == 1)	  // если быстрый проход был на соседнем столбце - модуль разности столбцов равен единице
+					{
+						id = makeId(row - 1, col2);	  // берем ячейку вверх и того столбца где был быстрый проход
+						moves.push(id);				  // добавляем ячейку в разрешенные
+					}
+				}
+			}
+
+		}
+	}
+	
+	for (var i = 0; i < moves.length; i++)			  
+	{
+		if (isId(moves[i]))							  // проверяем, правильный ли id - может выйти за пределы доски
+		{
+			cell = document.getElementById(moves[i]); // каждой ячейке, доступной для перемещения
+			cell.setAttribute('selected', '');		  // присваиваем атрибут selected
+			cell.onclick = clickCell;				  // устанавливаем обработчик - при нажатии мышкой на ячейку сработает функция clickCell
+		}
+	}
+}
+
+
+function isId(id)									  // функция для проверки правильности id
+{
+	if (id.length == 2)								  // если длина id равна 2
+	{
+		var col = id.substr(0, 1);					  // номер столбца (первый символ)
+		var row = id.substr(1, 1);					  // номер ряда (второй символ)
+		if (row >= 1 && row <= 8 && cols.indexOf(col) >= 0) // если ряд от 1 до 8 и столбец присутствует в массиве cols
+		{
+			return true;							  // все верно
+		}
+		else
+		{
+			return false;							  // проверка не прошла
+		}
+	}
+	else
+	{
+		return false;								  // проверка не прошла - длина id отлична от 2
+	}
+}
+
+
+function clickCell(e)								  // функция которая срабатывает после нажатия на ячейку доступную для перемещения
+{
+	var cell = this;							      // ячейка по которой нажали мышкой
+	var id = cell.id;								  // id ячейки
+	moveSelectedElementTo(id);						  // перемещаем нашу выбранную фигуру на эту ячейку
+}
+
+
+function moveSelectedElementTo(id)					  // функция для перемещения фигуры на новую клетку
+{
+	var newCell = document.getElementById(id);		  // ячейка, куда надо переместить фигуру
+	newCell.innerHTML = selectedElement.outerHTML; 	  // записываем внутрь ячейки код выделенного элемента
+	var newElement = newCell.childNodes[0];			  // получаем перемещенную фигуру
+	initElement(newElement);						  // инициализируем перемещенную фигуру
+	cell = selectedElement.parentNode;				  // ячейка в которой изначально находится наш элемент
+	cell.innerHTML = '';							  // очищаем ячейку
+	
+	var col1 = cell.id.substr(0, 1);				  // номер столбца исходной ячейки (первый символ id ячейки)
+	var row1 = cell.id.substr(1);					  // номер ряда исходной ячейки (второй символ id ячейки)
+	var col2 = newCell.id.substr(0, 1);				  // номер столбца новой ячейки (первый символ id ячейки)
+	var row2 = newCell.id.substr(1);				  // номер ряда новой ячейки (второй символ id ячейки)
+	
+													  // обработка "взятия на проходе"
+	if (col2 == lastFastMove)
+	{
+		if (newElement.color == 'white' && row2 == 6) // если цвет пешки белый и ряд куда она переместилась 6
+		{
+			var id2 = col2 + '5';					  // берем id ячейки с рядом 5 и столбцом куда мы переместились
+			var сell2 = document.getElementById(id2); // ячейка, откуда надо удалить фигуру
+			сell2.innerHTML = '';					  // удаляем все содержимое ячейки
+		}
+		if (newElement.color == 'black' && row2 == 3) // если цвет пешки черный и ряд куда она переместилась 3
+		{
+			var id2 = col2 + '4';					  // берем id ячейки с рядом 4 и столбцом куда мы переместились
+			var сell2 = document.getElementById(id2); // ячейка, откуда надо удалить фигуру
+			сell2.innerHTML = '';					  // удаляем все содержимое ячейки
+		}
+	}
+	
+	if (col1 == col2 && Math.abs(row2 - row1) == 2)   // если в исходной и новых ячейках одинаковые столбцы, а ряды отличаются на 2 (модуль разности номеров рядов равен двум)
+	{
+		lastFastMove = col1;						  // сохраняем название столбца
+	}
+	else
+	{
+		lastFastMove = '';							  // иначе очищаем
+	}
+	
+	clearSelection();								  // сбрасываем все выделенные ячейки
+	changeMoveColor();
+}
+
+
+function makeId(row, col)							  // функция для компоновки адреса - передаем номер ряда и номер столбца и получаем id ячейки
+{
+	return cols[col] + row.toString();                // находим столбец в массиве cols и добавляем к нему номер ряда
+}
+
+
+function hasFigura(row, col, color)					  // есть ли фигура в данном ряду и столбце с данным цветом
+{
+	var id = makeId(row, col);						  // получаем id ячейки
+	var cell = document.getElementById(id);           // находим ячейку по id
+	if (cell) {										  // если есть ячейка
+		var count = cell.childNodes.length; 	      // получаем массив элементов внутри ячейки, берем его длину
+		if (count > 0)								  // если элементов больше 0
+		{
+			var element = cell.childNodes[0];		  // выбираем элемент
+			if (color)								  // если указан цвет для проверки
+			{
+				if (element.color == color)			  // если цвета совпадают
+				{
+					return true;					  // есть фигура
+				}
+				else
+				{
+					return false;					  // если цвета не совпадают - нет фигуры
+				}
+			}
+			else
+			{
+				return true;						  // если не указан цвет - то фигура есть
+			}
+		}
+		else
+		{
+			return false;							  // нет элементов внутри ячейки - нет фигуры
+		}
+	}
+	else
+	{
+		return false;								  // нет ячейки - нет фигуры
+	}
+	
+}
+
+
+function invertColor(color)							  // функция смены цвета на противоположный
+{
+	if (color == 'white')							  // если цвет белый
+	{
+		return 'black';								  // возвращаем черный
+	}
+	else
+	{
+		return 'white';								  // в остальных случаях возвращаем белый
+	}
+}
+
+
+function changeMoveColor()							  // функция смены очередности хода
+{
+	moveColor = invertColor(moveColor);				  // меняем цвет стороны которая ходит на противоположный
+}
+
+
+function initElement(element)						  // функция для инициализации элемента
+{
+	element.color = element.className.substr(0, 5);   // сохраняем цвет - берем из класса элемента (первые 5 символов)
+	element.figura = element.className.substr(6);     // и фигуру - берем из класса элемента (начиная с 7 символа)
+	element.onclick = clickElement;				      // устанавливаем обработчик - при нажатии мышкой на фигуру сработает функция clickElement
+}
+
+
+var elements = $('a');								  // получаем все фигуры на доске
+for (var i = 0; i < elements.length; i++)
+{
+	var element = elements[i];					      // выбираем каждый элемент
+	initElement(element);							  // инициализируем
+}
+moveColor = 'white';								  // начальный ход у белых
+lastFastMove = '';									  // сохранение последнего хода на две клетки вперед для обработки "взятия на проходе"
+</script>
+</body>
+</html>

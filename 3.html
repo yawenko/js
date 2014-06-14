@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+td {  /* для каждой клетки шахматной доски */
+	width:30px;  /* ширина */
+	height:30px; /* длина */
+}
+td.white { /* светлые клетки */
+	background-color: lightgray; /* цвет клетки */
+}
+td.black { /* темные клетки */
+	background-color: black; /* цвет клетки */
+}
+</style>
+<script type="text/javascript">
+function generateTable()
+{
+	var width = document.getElementById("table_width").value; /* кол-во клеток в ширину */
+	var height = document.getElementById("table_height").value; /* кол-во клеток в длину */
+	var s = "";  /* переменная в которую будет формироваться html код доски */
+	for (var i = 0; i < width; i++)
+	{
+		s += "<tr>"; /* новая строка в таблице */
+		for (var j = 0; j < height; j++)
+		{
+			if ((i + j) % 2 == 0) /* если сумма длины и ширины делится на 2 без остатка - данное условие чередует клетки */
+			{
+				s += "<td class=\"white\"></td>"; /* ячейки таблицы, которая будет выглядет как светлая клетка */
+			}
+			else
+			{
+				s += "<td class=\"black\"></td>"; /* ячейки таблицы, которая будет выглядет как темная клетка */
+			}
+		}
+		s += "</tr>"; /* закрываем строку в таблице */
+	}
+	document.getElementById('table').innerHTML = s; /* добавляем полученный код внутрь элемента с идентификатором table */
+}
+</script>
+</head>
+
+<body>
+Введите размерность доски:<br/>
+<input type="number" min="0" max="10" id="table_width" /> <!-- поле для задания ширины доски -->
+x
+<input type="number" min="0" max="10" id="table_height" /> <!-- поле для задания длины доски -->
+<br/>
+<input type="button" onclick="generateTable()" value="Создать" /><br/> <!-- кнопка -->
+<br/>
+<br/>
+<table id="table"> <!-- таблица, которая будет выглядеть как шахматная доска -->
+</table>
+</body>
+</html>
